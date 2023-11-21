@@ -40,7 +40,6 @@ python3 -m main \
     --setup_file ./setup.py \
     --template_location "gs://$2/templates/megalista" \
     --num_workers 1 \
-    --autoscaling_algorithm=NONE \
     --autoscaling_algorithm=THROUGHPUT_BASED \
     --number_of_worker_harness_threads=16 \
     --service_account_email "$4" \
