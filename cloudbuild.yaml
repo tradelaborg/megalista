@@ -1,0 +1,15 @@
+steps:
+  - name: "google/cloud-sdk"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        pip install --upgrade pip
+        chmod +x deployment/deploy_cloud.sh
+        yes | ./deployment/deploy_cloud.sh ${_PROJECT_ID} ${_BUCKET_NAME} ${_REGION} ${_SERVICE_ACCOUNT_NAME}@${_PROJECT_ID}.iam.gserviceaccount.com false
+    secretEnv: ["MEGALISTA_CONFIG_FILE"]
+substitutions:
+  _BUCKET_NAME: ""
+  _REGION: "europe-west1"
+  _SERVICE_ACCOUNT_NAME: ""
+  _PROJECT_ID: ""
