@@ -71,7 +71,7 @@ class TransactionalEventsResultsWriter(beam.PTransform):
     return (
         executions
         | "Transform into tuples" >> beam.Map(lambda batch: (batch.execution.source.source_name, batch))
-        | "Group by source name" >> beam.CombinePerKey(BatchesGroupedBySourceCombineFn())
+        | "Group by source name" >> beam.GroupIntoBatches(100000)
         | "Encapsulate into object" >> beam.Map(BatchesGroupedBySourceMapper().encapsulate)
         | beam.ParDo(self._ElementsProcessor(self._error_handler))
         | beam.ParDo(self._UploadData(self._dataflow_options, self._transactional_type, self._error_handler))
