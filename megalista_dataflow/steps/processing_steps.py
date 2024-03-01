@@ -16,7 +16,7 @@ import apache_beam as beam
 
 from .megalista_step import MegalistaStep
 from sources.batches_from_executions import BatchesFromExecutions, TransactionalType
-from models.execution import DestinationType
+from models.execution import Batch, DestinationType
 from error.error_handling import ErrorHandler
 
 from uploaders.support.transactional_events_results_writer import (
@@ -76,6 +76,7 @@ from uploaders.display_video.customer_match.contact_info_uploader import (
 from uploaders.display_video.customer_match.mobile_uploader import (
     DisplayVideoCustomerMatchMobileUploaderDoFn,
 )
+from uploaders.uploaders import MegalistaUploader
 
 from mappers.ads_user_list_pii_hashing_mapper import AdsUserListPIIHashingMapper
 from mappers.dv_user_list_pii_hashing_mapper import DVUserListPIIHashingMapper
@@ -84,6 +85,37 @@ from third_party import THIRD_PARTY_STEPS
 
 ADS_CM_HASHER = AdsUserListPIIHashingMapper()
 DV_CM_HASHER = DVUserListPIIHashingMapper()
+
+
+## TODO reuse from other class
+
+class _BatchElements(MegalistaUploader):
+    def __init__(self, batch_size: int, error_handler: ErrorHandler):
+        super().__init__(error_handler)
+        self._batch_size = batch_size
+
+    def process(self, grouped_elements):
+        # grouped_elements[0] is the grouping key, the execution
+        execution = grouped_elements[0]
+        batch: List[Any] = []        
+        # Keeps track of the batch iteration
+        iteration = 1
+        # grouped_elements[1] is the list of elements
+        for i, element in enumerate(grouped_elements[1]):
+            if i != 0 and i % self._batch_size == 0:
+                yield Batch(execution, batch, iteration)
+                iteration += 1
+                batch = []
+            batch.append(element)
+        yield Batch(execution, batch, iteration)
+
+class FormatBatchesFn(beam.DoFn):
+    def process(self, element):
+        # Extract the key-value pairs from the batch element.
+        _, batch = element
+        key = batch[0][0]  # Assume all elements in the batch share the same key.
+        elements = [item[1] for item in batch]  # Collect all elements from the batch.
+        yield (key, elements)
 
 
 class GoogleAdsSSDStep(MegalistaStep):
@@ -534,6 +566,15 @@ class GoogleAnalytics4MeasurementProtocolStep(MegalistaStep):
                     )
                 )
             )
+            | "Flatten Batches" >> beam.FlatMap(
+                lambda batch: [('',(batch.execution, element)) for element in batch.elements])
+            | 'Batch Elements' >> beam.GroupIntoBatches(100000)
+            | 'Format Batches' >> beam.ParDo(FormatBatchesFn())
+            | "Rebatch Elements" >> beam.ParDo(_BatchElements(100000, ErrorHandler(
+                    DestinationType.GA_4_MEASUREMENT_PROTOCOL,
+                    self.params.error_notifier,
+                )))
+            | "Prevent Fusion Again"  >> beam.Reshuffle()  
             | "Persist results - GA 4 measurement protocol"
             >> TransactionalEventsResultsWriter(
                 self.params._dataflow_options,
