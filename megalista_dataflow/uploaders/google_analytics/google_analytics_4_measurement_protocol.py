@@ -98,11 +98,12 @@ class GoogleAnalytics4MeasurementProtocolUploaderDoFn(MegalistaUploader):
       if is_event:
         event_reserved_keys = self.reserved_keys + ['name']
         params = {k: v for k, v in row.items() if self._validate_param(k, v, event_reserved_keys)}
+        params['mp_filter'] = 1
         payload['events'] = [{'name': row['name'], 'params': params}]
 
       if is_user_property: 
         payload['userProperties'] = {k: {'value': v} for k, v in row.items() if self._validate_param(k, v, self.reserved_keys)}
-        payload['events'] = {'name': 'user_property_addition_event', 'params': {'engagement_time_msec' : 1}}
+        payload['events'] = {'name': 'user_property_addition_event', 'params': {'engagement_time_msec' : 1, 'mp_filter': 1}}
 
       url_container = [f'{self.API_URL}?api_secret={api_secret}']
 
