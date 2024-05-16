@@ -87,8 +87,15 @@ class GoogleAnalytics4MeasurementProtocolUploaderDoFn(MegalistaUploader):
       user_id = row.get('user_id')
       timestamp_micros = row.get('timestamp_micros')
 
+      # as per the GA4 MP documentation, the payload should have the following structure
+      # because "non_personalized_ads" is Obsolete:
+      # Use the ad_personalization field of consent instead of this field.
+      # Google Analytics accepts either field, but ad_personalization is recommended.
       payload: Dict[str, Any] = {
-        'nonPersonalizedAds': non_personalized_ads
+        'consent': {
+          'ad_user_data': 'GRANTED',
+          'ad_personalization': 'DENIED' if non_personalized_ads else 'GRANTED'
+        }
       }
 
       if not self._exactly_one_of(app_instance_id, client_id):
