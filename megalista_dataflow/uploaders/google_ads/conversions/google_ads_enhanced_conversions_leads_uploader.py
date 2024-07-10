@@ -114,6 +114,7 @@ class GoogleAdsECLeadsUploaderDoFn(MegalistaUploader):
 
     def _do_upload(self, oc_service, execution, conversion_resource_name, customer_id, rows):
         logging.getLogger(_DEFAULT_LOGGER).info(f'Uploading {len(rows)} offline conversions on {conversion_resource_name} to Google Ads.')
+        logging.getLogger('google.ads.googleads.client').setLevel(logging.DEBUG)
         conversions = []
         for row in rows:
             conversion= {
