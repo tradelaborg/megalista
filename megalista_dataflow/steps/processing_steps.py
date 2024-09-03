@@ -663,6 +663,7 @@ class DisplayVideoCustomerMatchContactInfoStep(MegalistaStep):
                 ),
                 self.params.dataflow_options,
                 DestinationType.DV_CUSTOMER_MATCH_CONTACT_INFO_UPLOAD,
+                100000,
             )
             | "Hash Users - Display & Video Customer Match Contact Info"
             >> beam.Map(DV_CM_HASHER.hash_users)
