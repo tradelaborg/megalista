@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import logging
-import time
 from typing import Dict, Any, List, Optional, Tuple
 from apache_beam.options.value_provider import StaticValueProvider
 from google.oauth2.credentials import Credentials
@@ -162,7 +161,6 @@ class DisplayVideoCustomerMatchAbstractUploaderDoFn(MegalistaUploader):
                 'Skipping upload to DV, parameters not configured.')
             return []
 
-        time.sleep(15)
         execution = batch.execution
 
         self._assert_execution_is_valid(execution)
