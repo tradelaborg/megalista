@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import logging
-import time
+import time, random, datetime
 from typing import Dict, Any, List, Optional, Tuple
 from apache_beam.options.value_provider import StaticValueProvider
 from google.oauth2.credentials import Credentials
@@ -156,7 +156,7 @@ class DisplayVideoCustomerMatchAbstractUploaderDoFn(MegalistaUploader):
         return [{key: row.get(key) for key in keys if key in row} for row in rows]
 
     @utils.safe_process(logger=logging.getLogger(_DEFAULT_LOGGER))
-    def process(self, batch: Batch, **kwargs) -> List[Execution]:
+    def process(self, batch: Batch, retry=3, **kwargs) -> List[Execution]:
         if not self.active:
             logging.getLogger(_DEFAULT_LOGGER).info(
                 'Skipping upload to DV, parameters not configured.')
@@ -202,12 +202,27 @@ class DisplayVideoCustomerMatchAbstractUploaderDoFn(MegalistaUploader):
             )
 
             # Updates found/created audience by renewing the customer's membership list
+            self._run_execution(audience, updated_list_definition)
+
+        return [execution]
+
+    def _run_execution(self, audience, updated_list_definition, retry = 5):
+        try:
             self._get_dv_audience_service().editCustomerMatchMembers(
                 firstAndThirdPartyAudienceId=audience['firstAndThirdPartyAudienceId'],
                 body=updated_list_definition
             ).execute()
-
-        return [execution]
+        except Exception as e:
+            if retry > 0:
+                now = datetime.datetime.now()
+                seconds_to_next_minute = 62 - now.second - now.microsecond / 1000000
+                sleeping = random.choice(
+                    [seconds_to_next_minute, seconds_to_next_minute + 60, seconds_to_next_minute + 120])
+                time.sleep(sleeping)
+                logging.getLogger(_DEFAULT_LOGGER).info(f'Smooth delay in operation retry:{retry} / sleeping:{sleeping}')
+                self._run_execution(audience, updated_list_definition, retry - 1)
+            else:
+                raise e
         
     def get_list_definition(self, account_config: AccountConfig,
                             destination_metadata: List[str], list_to_add: List[Dict[str, Any]]) -> Dict[str, Any]:
