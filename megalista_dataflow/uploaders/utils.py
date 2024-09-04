@@ -16,6 +16,7 @@ import datetime
 import logging
 import pytz
 import math
+import time
 import re
 
 from typing import Optional
@@ -66,7 +67,7 @@ def get_timestamp_micros(date):
     return math.floor(pdate.timestamp() * 10e5)
     
 
-def safe_process(logger):
+def safe_process(logger, retry=3):
     def deco(func):
         def inner(*args, **kwargs):
             self_ = args[0]
@@ -78,10 +79,17 @@ def safe_process(logger):
             try:
                 return func(*args, **kwargs)
             except BaseException as e:
-                self_._add_error(batch.execution, f'Error uploading data: {e}')
-                logger.error(f'Error uploading data for: {batch.execution.destination.destination_name}')
-                logger.error(e, exc_info=True)
-                logger.exception('Error uploading data.')
+                if retry > 0:
+                    logger.info(f'Smooth delay in operation {retry}')
+                    now = datetime.datetime.now()
+                    seconds_to_next_minute = 60 - now.second - now.microsecond / 1000000
+                    time.sleep(seconds_to_next_minute)
+                    safe_process(logger, retry - 1)(*args, **kwargs)
+                else:
+                    self_._add_error(batch.execution, f'Error uploading data: {e}')
+                    logger.error(f'Error uploading data for: {batch.execution.destination.destination_name}')
+                    logger.error(e, exc_info=True)
+                    logger.exception('Error uploading data.')
 
         return inner
 
