@@ -162,7 +162,7 @@ class DisplayVideoCustomerMatchAbstractUploaderDoFn(MegalistaUploader):
                 'Skipping upload to DV, parameters not configured.')
             return []
 
-        time.sleep(15)
+        time.sleep(25)
         execution = batch.execution
 
         self._assert_execution_is_valid(execution)
