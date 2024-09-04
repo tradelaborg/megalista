@@ -156,7 +156,7 @@ class DisplayVideoCustomerMatchAbstractUploaderDoFn(MegalistaUploader):
         return [{key: row.get(key) for key in keys if key in row} for row in rows]
 
     @utils.safe_process(logger=logging.getLogger(_DEFAULT_LOGGER))
-    def process(self, batch: Batch, retry=3, **kwargs) -> List[Execution]:
+    def process(self, batch: Batch, **kwargs) -> List[Execution]:
         if not self.active:
             logging.getLogger(_DEFAULT_LOGGER).info(
                 'Skipping upload to DV, parameters not configured.')
