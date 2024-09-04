@@ -84,7 +84,7 @@ def safe_process(logger, retry=3):
                     now = datetime.datetime.now()
                     seconds_to_next_minute = 60 - now.second - now.microsecond / 1000000
                     time.sleep(seconds_to_next_minute)
-                    safe_process(logger, retry - 1)(*args, **kwargs)
+                    safe_process(logger, retry - 1)(func)(*args, **kwargs)
                 else:
                     self_._add_error(batch.execution, f'Error uploading data: {e}')
                     logger.error(f'Error uploading data for: {batch.execution.destination.destination_name}')
