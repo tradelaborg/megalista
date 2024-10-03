@@ -122,7 +122,7 @@ To update the binary without redoing the whole deployment process, run:
 - ./deployment/deploy_cloud.sh *gcp_project_id* *bucket_name* *region* *service_account_email*
 
 ## Usage
-Every upload method expects as source a BigQuery data with specific fields, in addition to specific configuration metadata. For details on how to setup your upload routines, refer to the [Megalista Wiki](https://github.com/google/megalista/wiki).
+Every upload method expects as source a BigQuery data with specific fields, in addition to specific configuration metadata. For details on how to setup your upload routines, refer to the [Megalista Wiki](wiki/Home.md).
 
 ## Errors notifications by email
 To have uploaders errors captured and sent by email, do the following:
