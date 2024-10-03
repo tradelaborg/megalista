@@ -76,12 +76,12 @@ Required APIs will depend on upload endpoints in use.
 - Display & Video [[link]](https://console.cloud.google.com/apis/library/displayvideo.googleapis.com)
 
 ## Configure Megalista
-Megalista can be configured via Google Sheets, a JSON file, or a Google Cloud Firestore collection. Expected data schemas (Sources) and metadata (Destinations) for each use case are defined in [the Megalista Wiki](https://github.com/google/megalista/wiki).
+Megalista can be configured via Google Sheets, a JSON file, or a Google Cloud Firestore collection. Expected data schemas (Sources) and metadata (Destinations) for each use case are defined in [the Megalista Wiki](_wiki).
 
 Instructions for each configuration method method can be found in the Megalista wiki
-- [Google Sheets] (https://github.com/google/megalista/wiki/Google-Sheets)
-- [JSON] (https://github.com/google/megalista/wiki/JSON)
-- [Firestore] (https://github.com/google/megalista/wiki/Firestore)
+- [Google Sheets] (_wiki/Google-Sheets.md)
+- [JSON] (_wiki/JSON.md)
+- [Firestore] (_wiki/Firestore.md)
 
 ## Deployment
 
