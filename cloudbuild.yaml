@@ -4,9 +4,9 @@ steps:
     args:
       - "-c"
       - |
-        python3 -m pip config set global.break-system-packages true
-        pip install --upgrade pip
-        chmod +x deployment/deploy_cloud.sh
+        python3 -m pip config set global.break-system-packages true && \
+        pip install --upgrade pip && \
+        chmod +x deployment/deploy_cloud.sh && \
         yes | ./deployment/deploy_cloud.sh ${_PROJECT_ID} ${_BUCKET_NAME} ${_REGION} ${_SERVICE_ACCOUNT_NAME}@${_PROJECT_ID}.iam.gserviceaccount.com false
 substitutions:
   _BUCKET_NAME: ""
