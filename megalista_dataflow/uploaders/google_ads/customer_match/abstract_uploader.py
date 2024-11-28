@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+import time, random, datetime
 from typing import Dict, Any, List, Optional, Union
 
 from apache_beam.options.value_provider import StaticValueProvider
@@ -217,6 +218,7 @@ class GoogleAdsCustomerMatchAbstractUploaderDoFn(MegalistaUploader):
                 'Skipping upload to ads, parameters not configured.')
             return
 
+        time.sleep(15)
         execution = batch.execution
 
         self._assert_execution_is_valid(execution)
@@ -260,15 +262,31 @@ class GoogleAdsCustomerMatchAbstractUploaderDoFn(MegalistaUploader):
             'operations': operations
         }
 
-        data_insertion_response = offline_user_data_job_service.add_offline_user_data_job_operations(
-            request=data_insertion_payload)
-
+        data_insertion_response = self._run_execution(offline_user_data_job_service, data_insertion_payload, execution)
         error_message = utils.print_partial_error_messages(_DEFAULT_LOGGER, 'uploading customer match',
                                                            data_insertion_response)
         if error_message:
             self._add_error(execution, error_message)
 
         return [execution]
+
+    def _run_execution(self, offline_user_data_job_service, data_insertion_payload, execution, retry = 5):
+        try:
+            data_insertion_response = offline_user_data_job_service.add_offline_user_data_job_operations(
+                request=data_insertion_payload
+            )
+        except Exception as e:
+            if retry > 0:
+                now = datetime.datetime.now()
+                seconds_to_next_minute = 62 - now.second - now.microsecond / 1000000
+                sleeping = random.choice(
+                    [seconds_to_next_minute, seconds_to_next_minute + 60, seconds_to_next_minute + 120]
+                )
+                logging.getLogger(_DEFAULT_LOGGER).info(f'Smooth delay in operation retry:{retry} / sleeping:{sleeping}')
+                self._run_execution(offline_user_data_job_service, data_insertion_payload, execution, retry - 1)
+            else:
+                raise e
+        return data_insertion_response
 
     def get_list_definition(self, account_config: AccountConfig,
                             destination_metadata: List[str]) -> Dict[str, Any]:
