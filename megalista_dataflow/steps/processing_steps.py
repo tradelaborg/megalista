@@ -182,7 +182,6 @@ class GoogleAdsCustomerMatchMobileDeviceIdStep(MegalistaStep):
                 ),
                 self.params.dataflow_options,
                 DestinationType.ADS_CUSTOMER_MATCH_MOBILE_DEVICE_ID_UPLOAD,
-                50000,
             )
             | "Hash Users - Google Ads Customer Match Contact Info"
             >> beam.Map(ADS_CM_HASHER.hash_users)
@@ -212,7 +211,6 @@ class GoogleAdsCustomerMatchContactInfoStep(MegalistaStep):
                 ),
                 self.params.dataflow_options,
                 DestinationType.ADS_CUSTOMER_MATCH_CONTACT_INFO_UPLOAD,
-                50000,
             )
             | "Hash Users - Google Ads Customer Match Contact Info"
             >> beam.Map(ADS_CM_HASHER.hash_users)
@@ -242,7 +240,6 @@ class GoogleAdsCustomerMatchUserIdStep(MegalistaStep):
                 ),
                 self.params.dataflow_options,
                 DestinationType.ADS_CUSTOMER_MATCH_USER_ID_UPLOAD,
-                50000,
             )
             | "Hash Users - Google Ads Customer Match Contact Info"
             >> beam.Map(ADS_CM_HASHER.hash_users)
